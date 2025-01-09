@@ -1,16 +1,30 @@
 // Game variables
+
+// mobs
 let player;
 let ennemies;
+let friends;
+
+// bullets
 let damageBullets;
 let repairBullets;
+
+// health bar
 let healthBarWidth = 32;
 let healthBarHeight = 5;
+let playerHealth = 100;
+
+// game mechanics
 let Dammages = 10;
 let Reparation = 10;
-let playerHealth = 100;
 let canShoot = true;
 let canRepair = true;
+
+// score
 let score = 0;
+
+// animation
+let shapeShifterAni;
 
 function setup() {
     // Create the game canvas (16:9 aspect ratio)
@@ -39,6 +53,26 @@ function setup() {
         ennemies.add(ennemy);
     }
 
+    // Create initial friends
+    friends = new Group();
+    generateFriend();
+
+    // Load the shape shifter animation for enemies
+    shapeShifterAni = loadAni(
+        'assets/pixil-frame-0_6-petit.png',
+        'assets/pixil-frame-0_7-petit.png',
+    );
+
+    // Scale the shape shifter animation frames
+    shapeShifterAni.scale = 0.5;
+
+    shapeShifterAni.frameDelay = 20;
+
+    // Assign the animation to each enemy
+    ennemies.forEach(ennemy => {
+        ennemy.addAni(shapeShifterAni);
+    });
+
     // Create groups for bullets
     damageBullets = new Group();
     repairBullets = new Group();
@@ -47,6 +81,7 @@ function setup() {
 function draw() {
     clear();
     background(26, 129, 32);
+    animation(shapeShifterAni, 250, 80);
 
     // Move the camera to follow the player
     camera.position.x = player.x;
@@ -108,6 +143,12 @@ function draw() {
         ennemy.healthBarHP = min(ennemy.healthBarHP + Reparation, 100); // Apply reparation to the enemy, but not beyond max health
     });
 
+    // Check for repair bullet collisions with friends
+    repairBullets.overlap(friends, (repair, friend) => {
+        repair.remove();
+        friend.healthBarHP = min(friend.healthBarHP + Reparation, 100); // Apply reparation to the friend, but not beyond max health
+    });
+
     // Check for enemy collisions with player
     ennemies.overlap(player, (ennemy, player) => {
         playerHealth -= Dammages; // Apply damage to the player
@@ -138,6 +179,29 @@ function draw() {
     // Draw the health bar for each enemy
     ennemies.forEach(ennemy => {
         drawHealthBar(ennemy.x, ennemy.y - 40, ennemy.healthBarHP, 100);
+    });
+
+    // Draw the health bar for each friend
+    friends.forEach(friend => {
+        drawHealthBar(friend.x, friend.y - 40, friend.healthBarHP, 100);
+    });
+
+    // Update the appearance of friends based on their health
+    friends.forEach(friend => {
+        if (friend.healthBarHP < 100) {
+            friend.changeAnimation('assets/pixil-frame-0_15-petit.png');
+        } else {
+            friend.changeAnimation('asqzsets/pixil-frame-0_16-petit.png');
+        }
+    });
+
+    // remove friends if they are fully healed (2 seconds after reaching full health)
+    friends.forEach(friend => {
+        if (friend.healthBarHP === 100) {
+            setTimeout(() => {
+                friend.remove();
+            }, 2000);
+        }
     });
 
     // Draw the health bar for the player
@@ -199,9 +263,25 @@ function MobGeneration() {
         ennemy.x = random(0, width);
         ennemy.y = random(0, height);
         ennemy.healthBarHP = 100; // Initialize health for each enemy
+        ennemy.addAni(shapeShifterAni); // Assign the animation to the enemy
         ennemies.add(ennemy);
     }
 }
 
-// Call MobGeneration every minute (60000 milliseconds)
-setInterval(MobGeneration, 60000);
+// Generate a friend with low health
+function generateFriend() {
+    let friend = new Sprite();
+    friend.width = 32;
+    friend.height = 32;
+    friend.color = 'green';
+    friend.x = random(0, width);
+    friend.y = random(0, height);
+    friend.healthBarHP = 20; // Initialize health for the friend with low health
+    friends.add(friend);
+}
+
+// Call MobGeneration every minute (20000 milliseconds)
+setInterval(MobGeneration, 20000);
+
+// make a new friend appear every 10 seconds
+setInterval(generateFriend, 10000);
