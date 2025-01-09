@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+<style>
+    body {
+        background-color: black;
+        color: white;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+        font-family: 'Arial', sans-serif;
+        overflow: hidden;
+    }
+    .death-screen {
+        text-align: center;
+        animation: fadeIn 2s ease-in-out;
+    }
+    .death-screen h1 {
+        font-size: 4em;
+        margin: 0;
+        animation: pulse 1.5s infinite;
+    }
+    .death-screen p {
+        font-size: 1.5em;
+        animation: slideIn 1s ease-in-out;
+    }
+    .death-screen button {
+        margin-top: 20px;
+        padding: 10px 20px;
+        font-size: 1em;
+        background-color: red;
+        color: white;
+        border: none;
+        cursor: pointer;
+        transition: background-color 0.3s, transform 0.3s;
+    }
+    .death-screen button:hover {
+        background-color: darkred;
+        transform: scale(1.1);
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+    }
+    @keyframes slideIn {
+        from { transform: translateY(20px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+</style>
+
+<div class="death-screen">
+    <h1>Game Over</h1>
+    <p>You have died.</p>
+    <p>Score: <span id="score"></span></p>
+    <button onclick="restartGame()">Retry</button>
+</div>
+
+<script>
+    
+    function restartGame() {
+        window.location.href = 'index.html'; // Redirect to the main game page
+    }
+
+    // Get the score from the URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const score = urlParams.get('score');
+
+    // Display the score in the span element
+    document.getElementById('score').textContent = score;
+</script>
+
+</html>
