@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Dead</title>
 </head>
 <body>
 <style>
@@ -61,8 +61,8 @@
 
 <div class="death-screen">
     <h1>Game Over</h1>
-    <p>You have died.</p>
-    <p>Score: <span id="score"></span></p>
+    <p>You could not clean your mail  </p>
+    <p>Score : <span id="score"></span></p>
     <button onclick="restartGame()">Retry</button>
 </div>
 
@@ -72,9 +72,9 @@
         window.location.href = 'index.html'; // Redirect to the main game page
     }
 
-    // Get the score from the URL parameters
-    const urlParams = new URLSearchParams(window.location.search);
-    const score = urlParams.get('score');
+    // Retrieve the score from localStorage and display it in the span element
+    const score = localStorage.getItem('score') || '0';
+    document.getElementById('score').textContent = score;
 
     // Display the score in the span element
     document.getElementById('score').textContent = score;
