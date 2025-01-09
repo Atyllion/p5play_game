@@ -8,6 +8,7 @@ let friends;
 // bullets
 let damageBullets;
 let repairBullets;
+let enemyBullets; // Add a group for enemy bullets
 
 // health bar
 let healthBarWidth = 32;
@@ -27,7 +28,7 @@ let score = 0;
 let shapeShifterAni;
 
 function setup() {
-    // Create the game canvas (16:9 aspect ratio)
+    // Create the game canvas
     createCanvas(windowWidth, windowHeight);
 
     // Create the player sprite
@@ -36,7 +37,7 @@ function setup() {
     player.height = 32;
     player.color = 'blue';
     
-    // Set up basic player movement
+    // Set up basic player mouvement
     player.friction = 0.1;
     player.maxSpeed = 4;
 
@@ -76,12 +77,17 @@ function setup() {
     // Create groups for bullets
     damageBullets = new Group();
     repairBullets = new Group();
+    enemyBullets = new Group(); // Initialize the enemy bullets group
+
+    // Set interval for enemies to shoot bullets
+    setInterval(enemyShoot, 10000);
 }
 
 function draw() {
     clear();
     background(26, 129, 32);
     animation(shapeShifterAni, 250, 80);
+    checkWinCondition();
 
     // Move the camera to follow the player
     camera.position.x = player.x;
@@ -134,6 +140,7 @@ function draw() {
         if (ennemy.healthBarHP <= 0) {
             ennemy.remove();
             score += 100; // Increase score by 100 for each enemy killed
+            playerHealth = min(playerHealth + 5, 100); // Increase player health by 5
         }
     });
 
@@ -147,6 +154,17 @@ function draw() {
     repairBullets.overlap(friends, (repair, friend) => {
         repair.remove();
         friend.healthBarHP = min(friend.healthBarHP + Reparation, 100); // Apply reparation to the friend, but not beyond max health
+    });
+
+    // Check for enemy bullet collisions with player
+    enemyBullets.overlap(player, (bullet, player) => {
+        bullet.remove();
+        playerHealth -= Dammages; // Apply damage to the player
+
+        // End game if player health is 0 or less
+        if (playerHealth <= 0) {
+            playerDeath(); // Call the playerDeath function
+        }
     });
 
     // Check for enemy collisions with player
@@ -191,16 +209,21 @@ function draw() {
         if (friend.healthBarHP < 100) {
             friend.changeAnimation('assets/pixil-frame-0_15-petit.png');
         } else {
-            friend.changeAnimation('asqzsets/pixil-frame-0_16-petit.png');
+            friend.changeAnimation('assets/pixil-frame-0_16-petit.png');
         }
-    });
 
-    // remove friends if they are fully healed (2 seconds after reaching full health)
-    friends.forEach(friend => {
-        if (friend.healthBarHP === 100) {
+        // remove friends if they are fully healed (2 seconds after reaching full health)
+        if (friend.healthBarHP === 100 && !friend.removalScheduled) {
+            friend.removalScheduled = true;
             setTimeout(() => {
                 friend.remove();
             }, 2000);
+        }
+
+        let previousHealth = friend.healthBarHP;
+        // Increase score by 50 if the friend is fully healed
+        if (previousHealth < 100 && friend.healthBarHP === 100) {
+            score += 50;
         }
     });
 
@@ -243,8 +266,8 @@ function drawHealthPlayer(x, y, currentHealth, maxHealth) {
 }
 
 function drawScore() {
-    fill(255);
-    textSize(24);
+    fill(255, 255, 255); // Change text color to yellow for better visibility
+    textSize(32); // Increase text size to 32
     textAlign(RIGHT, TOP);
     text(`Score: ${score}`, width - 20, 20);
 }
@@ -252,6 +275,9 @@ function drawScore() {
 function playerDeath() {
     noLoop(); // Stop the game loop
     window.location.href = 'death.html'; // Redirect to the 'death' page
+
+    // Save the score in local storage
+    localStorage.setItem('score', score);
 }
 
 function MobGeneration() {
@@ -278,6 +304,37 @@ function generateFriend() {
     friend.y = random(0, height);
     friend.healthBarHP = 20; // Initialize health for the friend with low health
     friends.add(friend);
+}
+
+// Function for enemies to shoot bullets towards the player
+function enemyShoot() {
+    ennemies.forEach(ennemy => {
+        let bullet = new Sprite(ennemy.x, ennemy.y, 10, 10);
+        bullet.color = 'purple';
+        bullet.stroke = 'purple';
+
+        let angle = atan2(player.y - ennemy.y, player.x - ennemy.x);
+        bullet.vel.x = cos(angle) * 10;
+        bullet.vel.y = sin(angle) * 10;
+
+        bullet.collider = 'none';
+        enemyBullets.add(bullet);
+    });
+}
+
+// Check if the player has won the game
+function checkWinCondition() {
+    if (score >= 2500) {
+        WinGame(); // Call the WinGame function
+    }
+}
+
+function WinGame() {
+    noLoop(); // Stop the game loop
+    window.location.href = './win.html'; // Redirect to the 'win' page
+
+    // Save the score in local storage
+    localStorage.setItem('score', score);
 }
 
 // Call MobGeneration every minute (20000 milliseconds)
