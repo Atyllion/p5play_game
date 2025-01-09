@@ -8,7 +8,7 @@ let friends;
 // bullets
 let damageBullets;
 let repairBullets;
-let enemyBullets; // Add a group for enemy bullets
+let enemyBullets; 
 
 // health bar
 let healthBarWidth = 32;
@@ -80,7 +80,7 @@ function setup() {
     enemyBullets = new Group(); // Initialize the enemy bullets group
 
     // Set interval for enemies to shoot bullets
-    setInterval(enemyShoot, 10000);
+    setInterval(enemyShoot, 8000);
 }
 
 function draw() {
@@ -151,9 +151,15 @@ function draw() {
     });
 
     // Check for repair bullet collisions with friends
-    repairBullets.overlap(friends, (repair, friend) => {
+        repairBullets.overlap(friends, (repair, friend) => {
         repair.remove();
+        let previousHealth = friend.healthBarHP; // Store previous health before updating
         friend.healthBarHP = min(friend.healthBarHP + Reparation, 100); // Apply reparation to the friend, but not beyond max health
+
+        // Increase score by 50 if the friend is fully healed
+        if (previousHealth < 100 && friend.healthBarHP === 100) {
+            score += 50;
+        }
     });
 
     // Check for enemy bullet collisions with player
@@ -221,6 +227,7 @@ function draw() {
         }
 
         let previousHealth = friend.healthBarHP;
+
         // Increase score by 50 if the friend is fully healed
         if (previousHealth < 100 && friend.healthBarHP === 100) {
             score += 50;
@@ -324,7 +331,7 @@ function enemyShoot() {
 
 // Check if the player has won the game
 function checkWinCondition() {
-    if (score >= 2500) {
+    if (score >= 3000) {
         WinGame(); // Call the WinGame function
     }
 }
@@ -337,8 +344,8 @@ function WinGame() {
     localStorage.setItem('score', score);
 }
 
-// Call MobGeneration every minute (20000 milliseconds)
-setInterval(MobGeneration, 20000);
+// Call MobGeneration every 15 seconds
+setInterval(MobGeneration, 15000);
 
 // make a new friend appear every 10 seconds
 setInterval(generateFriend, 10000);
