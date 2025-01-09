@@ -7,8 +7,10 @@ let healthBarWidth = 32;
 let healthBarHeight = 5;
 let Dammages = 10;
 let Reparation = 10;
+let playerHealth = 100;
 let canShoot = true;
 let canRepair = true;
+let score = 0;
 
 function setup() {
     // Create the game canvas (16:9 aspect ratio)
@@ -96,6 +98,7 @@ function draw() {
         // Remove enemy if health is 0 or less
         if (ennemy.healthBarHP <= 0) {
             ennemy.remove();
+            score += 100; // Increase score by 100 for each enemy killed
         }
     });
 
@@ -103,6 +106,16 @@ function draw() {
     repairBullets.overlap(ennemies, (repair, ennemy) => {
         repair.remove();
         ennemy.healthBarHP = min(ennemy.healthBarHP + Reparation, 100); // Apply reparation to the enemy, but not beyond max health
+    });
+
+    // Check for enemy collisions with player
+    ennemies.overlap(player, (ennemy, player) => {
+        playerHealth -= Dammages; // Apply damage to the player
+
+        // End game if player health is 0 or less
+        if (playerHealth <= 0) {
+            playerDeath(); // Call the playerDeath function
+        }
     });
 
     // Control of the player
@@ -126,6 +139,12 @@ function draw() {
     ennemies.forEach(ennemy => {
         drawHealthBar(ennemy.x, ennemy.y - 40, ennemy.healthBarHP, 100);
     });
+
+    // Draw the health bar for the player
+    drawHealthPlayer(player.x, player.y - 40, playerHealth, 100);
+
+    // Draw the score in the top right corner
+    drawScore();
 }
 
 function drawHealthBar(x, y, currentHealth, maxHealth) {
@@ -140,3 +159,49 @@ function drawHealthBar(x, y, currentHealth, maxHealth) {
     fill(0, 255, 0);
     rect(x - healthBarWidth / 2, y, healthBarWidth * healthRatio, healthBarHeight);
 }
+
+function drawHealthPlayer(x, y, currentHealth, maxHealth) {
+    // Calculate the health ratio
+    let healthRatio = currentHealth / maxHealth;
+
+    // Draw the background of the health bar (red)
+    fill(255, 0, 0);
+    rect(x - healthBarWidth, y, healthBarWidth * 2, healthBarHeight * 2);
+
+    // Draw the foreground of the health bar (green) based on current health
+    fill(0, 255, 0);
+    rect(x - healthBarWidth, y, (healthBarWidth * 2) * healthRatio, healthBarHeight * 2);
+
+    // Draw the border of the health bar
+    noFill();
+    stroke(0);
+    rect(x - healthBarWidth, y, healthBarWidth * 2, healthBarHeight * 2);
+}
+
+function drawScore() {
+    fill(255);
+    textSize(24);
+    textAlign(RIGHT, TOP);
+    text(`Score: ${score}`, width - 20, 20);
+}
+
+function playerDeath() {
+    noLoop(); // Stop the game loop
+    window.location.href = 'death.html'; // Redirect to the 'death' page
+}
+
+function MobGeneration() {
+    for (let i = 0; i < 5; i++) {
+        let ennemy = new Sprite();
+        ennemy.width = 32;
+        ennemy.height = 32;
+        ennemy.color = 'red';
+        ennemy.x = random(0, width);
+        ennemy.y = random(0, height);
+        ennemy.healthBarHP = 100; // Initialize health for each enemy
+        ennemies.add(ennemy);
+    }
+}
+
+// Call MobGeneration every minute (60000 milliseconds)
+setInterval(MobGeneration, 60000);
