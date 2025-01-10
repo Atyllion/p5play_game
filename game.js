@@ -674,7 +674,7 @@ function enemyShoot() {
 
 // Check if the player has won the game
 function checkWinCondition() {
-    if (score >= 1000) {
+    if (score >= 2500) {
         WinGame(); // Call the WinGame function
     }
 }
